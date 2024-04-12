@@ -1,95 +1,112 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+import { useRouter } from 'next/navigation';
+import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useState,useEffect } from 'react';
 
-export default function Home() {
+
+export default function HomePage() {
+  const router = useRouter();
+
+  const [users,setUsers] = useState([
+    {id: 1, name: 'Salman', email: 'salman123@gmail.com', contact: '9999123498'},
+    {id: 2, name: 'John', email: 'john.doe@example.com', contact: '1234567890'},
+    {id: 3, name: 'Emily', email: 'emily.smith@example.com', contact: '9876543210'},
+    {id: 4, name: 'Michael', email: 'michael87@gmail.com', contact: '5555555555'},
+    {id: 5, name: 'Sara', email: 'sara.miller@example.com', contact: '7777777777'},
+    {id: 6, name: 'Ahmed', email: 'ahmed_22@hotmail.com', contact: '3333333333'},
+    {id: 7, name: 'Sophia', email: 'sophia.jackson@example.com', contact: '2222222222'},
+    {id: 8, name: 'David', email: 'david.smith@example.com', contact: '6666666666'}
+  ]);
+
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [isOnline, setIsOnline] = useState(true); // Default to online
+
+  useEffect(() => {
+    // Check online status
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleEdit = (id) => {
+    setEditId(id);
+    setEditName(users.find(user => user.id === id).name);
+  };
+
+  const handleSave = (id) => {
+    const updatedUsers = users.map(user => {
+      if (user.id === id) {
+        return { ...user, name: editName };
+      }
+      return user;
+    });
+    setUsers(updatedUsers);
+    setEditId(null);
+    setTimeout(() => {
+      router.push('/display?message=Edit operation successful');
+    }, 0); // Push the route after the state is updated
+  };
+
+  const handleDelete = (id) => {
+    const updatedUsers = users.filter(user => user.id !== id);
+    setUsers(updatedUsers);
+    setTimeout(() => {
+      router.push('/display?message=Delete operation successful');
+    }, 0); // Push the route after the state is updated
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <div className="container">
+      <div style={{ position: 'fixed', top: 0, width: '100%', background: 'white', padding: '10px', textAlign: 'center' }}>
+        {isOnline ? 'Online ' : 'Offline '}
+        {isOnline ? '🟢' : '🔴'}
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <h1 className="heading" style={{ marginTop: '50px' }}>Data Listing</h1>
+      <Table striped border hover style={{ width: '80%', margin: 'auto', marginTop: '100px' }}>
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(({ id, name, email, contact }) => (
+            <tr key={id}>
+              <td>{id}</td>
+              <td>
+                {editId === id ? (
+                  <input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                ) : (
+                  name
+                )}
+              </td>
+              <td>{email}</td>
+              <td>{contact}</td>
+              <td>
+                {editId === id ? (
+                  <Button variant="success" onClick={() => handleSave(id)}>Save</Button>
+                ) : (
+                  <Button variant="primary" onClick={() => handleEdit(id)}>Edit</Button>
+                )}
+                <Button variant="danger" onClick={() => handleDelete(id)}>Delete</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </div>
   );
 }
